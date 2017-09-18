@@ -14,9 +14,16 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
-group = 'com.duc.aws'
-version = '0.0.1-SNAPSHOT'
+jar {
+    group = 'com.duc.aws'
+	version = '0.0.1-SNAPSHOT'
+}
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+//group = 'com.duc.aws'
+//version = '0.0.1-SNAPSHOT'
+//sourceCompatibility = 1.8
 
 repositories {
 	mavenCentral()
@@ -24,11 +31,14 @@ repositories {
 
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter-data-jpa')
+	//compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.1')
 	compile('org.springframework.boot:spring-boot-starter-security')
 	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.projectlombok:lombok')
+	compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.7.0'
 	runtime('mysql:mysql-connector-java')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile('org.springframework.security:spring-security-test')
+	testCompile('junit:junit:4.12')
 }
