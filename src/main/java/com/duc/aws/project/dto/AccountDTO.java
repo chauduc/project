@@ -5,9 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-public class AuthDTO {
-	private String username;
+@NoArgsConstructor
+public class AccountDTO {
+	private String userName;
 	private String password;
 	private int score;
+	private int ranking;
 }
