@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.amazonaws.util.Base64;
 import com.duc.aws.project.dao.AccountDAO;
+import com.duc.aws.project.dao.RankingDAO;
 import com.duc.aws.project.dto.AccountDTO;
+import com.duc.aws.project.dto.RankingDTO;
 import com.duc.aws.project.model.JwtUser;
 
 @Service
@@ -15,6 +17,9 @@ public class UserService {
 
 	@Autowired
 	AccountDAO accountDAO;
+
+	@Autowired
+	RankingDAO rankingDAO;
 
 	@Autowired
 	private JwtService jwtService;
@@ -51,10 +56,10 @@ public class UserService {
 	 * @return
 	 */
 	public List<AccountDTO> findUserByRanking(int fromRank, int toRank) {
-		
-		// Call rankingDao to get UserName List
-		// Pass Username list to findAccountByRank
-		List<AccountDTO> accountList = accountDAO.findAccountByRank(null);
+
+		List<RankingDTO> listAccount = rankingDAO.getRankingByRange(fromRank, toRank);
+
+		List<AccountDTO> accountList = accountDAO.findAccountByRank(listAccount);
 		return accountList;
 	}
 
@@ -74,7 +79,12 @@ public class UserService {
 		}
 		return token;
 	}
-	
+
+	/**
+	 * @param userName
+	 * @param score
+	 * @return
+	 */
 	public Boolean updateScore(String userName, int score) {
 		AccountDTO account = new AccountDTO();
 		account.setUserName(userName);

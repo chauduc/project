@@ -15,6 +15,10 @@ import com.duc.aws.project.services.JwtService;
 
 import io.jsonwebtoken.JwtException;
 
+/**
+ * @author m00306
+ *
+ */
 @WebFilter(urlPatterns = { "/api/secure/*" })
 public class JwtFilter implements Filter {
 	@Autowired
@@ -29,6 +33,9 @@ public class JwtFilter implements Filter {
     @Override 
     public void destroy() {}
 
+    /* (non-Javadoc)
+     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+     */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException
     {

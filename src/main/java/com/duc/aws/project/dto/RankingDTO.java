@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 public class RankingDTO {
 	private int fromRank;
 	private int toRank;
-	private String UserName;
+	private String userName;
 	private int currentRank;
 }

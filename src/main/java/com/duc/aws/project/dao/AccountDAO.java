@@ -6,19 +6,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.ItemCollection;
 import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
+import com.amazonaws.services.dynamodbv2.document.ScanOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
+import com.amazonaws.services.dynamodbv2.document.spec.ScanSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.duc.aws.project.config.DynamoDBConfig;
 import com.duc.aws.project.dto.AccountDTO;
 import com.duc.aws.project.dto.RankingDTO;
+
+import javassist.expr.NewArray;
 
 /**
  * @author m00306
@@ -29,7 +36,7 @@ public class AccountDAO {
 
 	@Autowired
 	DynamoDBConfig dynamoDBConfig;
-	
+
 	@Autowired
 	RankingDAO rankingDAO;
 
@@ -82,6 +89,8 @@ public class AccountDAO {
 	}
 
 	/**
+	 * Find account by username
+	 * 
 	 * @param userName
 	 * @return
 	 */
@@ -100,7 +109,7 @@ public class AccountDAO {
 				item = iterator.next();
 				dto.setUserName(item.getString("UserName"));
 				dto.setPassword(item.getString("Password"));
-				dto.setRanking(rankingDAO.getCurrentRanking(item.getString("UserName")));
+				dto.setRanking(rankingDAO.getRankingByUserName(item.getString("UserName")));
 				dto.setScore(item.getInt("Score"));
 				return dto;
 			}
@@ -112,19 +121,31 @@ public class AccountDAO {
 		return null;
 	}
 
+	/**
+	 * Find Account by ranking
+	 * 
+	 * @param listUserRanking
+	 * @return
+	 */
 	public List<AccountDTO> findAccountByRank(List<RankingDTO> listUserRanking) {
 		Table accountTable = dynamoDBConfig.getTable(TABLE_NAME);
 		List<AccountDTO> rs = new ArrayList<AccountDTO>();
 
-		List<String> listUserName = new ArrayList<String>();
-		for (RankingDTO rankingDTO : listUserRanking) {
-			listUserName.add(rankingDTO.getUserName());
+		// Create map-value for scan filter expression
+		Map<String,Object> mapOptions = new HashMap<String,Object>();
+		List<String> listValue = new ArrayList<String>();
+		int i = 0;
+		for (RankingDTO account : listUserRanking) {
+			mapOptions.put(":u" + i, account.getUserName());
+			listValue.add(":u" + i);
+			i++;
 		}
-
-		QuerySpec spec = new QuerySpec().withKeyConditionExpression("UserName IN (:userName)")
-				.withValueMap(new ValueMap().withList(":userName", listUserName));
-
-		ItemCollection<QueryOutcome> items = accountTable.query(spec);
+		
+		ScanSpec scanSpec = new ScanSpec().withFilterExpression("#userName IN ("+ StringUtils.join(listValue, ",") +")")
+				.withNameMap(new NameMap().with("#userName", "UserName"))
+				.withValueMap(mapOptions);
+		
+		ItemCollection<ScanOutcome> items = accountTable.scan(scanSpec);
 
 		Iterator<Item> iterator = items.iterator();
 		Item item = null;
@@ -135,13 +156,12 @@ public class AccountDAO {
 			dto.setUserName(item.getString("UserName"));
 			dto.setPassword(item.getString("Password"));
 			for (RankingDTO item2 : listUserRanking) {
-				if (item2.getUserName() == item.getString("UserName")) {
+				if (item2.getUserName().equals(item.getString("UserName"))) {
 					dto.setRanking(item2.getCurrentRank());
 				}
 			}
 			dto.setScore(item.getInt("Score"));
 			rs.add(dto);
-			return rs;
 		}
 		return rs;
 	}

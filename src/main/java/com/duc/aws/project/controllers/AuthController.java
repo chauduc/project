@@ -31,19 +31,13 @@ public class AuthController {
 	private ObjectMapper objectMapper;
 	
 	private static final String ERROR = "FAIL";
-
-	@GetMapping(value = "/api/secure/hello/{name}")
-	public ResponseEntity<?> helloSecure(@PathVariable String name) {
-		String result = String.format("Hello JWT, %s! (Secure)", name);
-		return ResponseEntity.ok(result);
-	}
-
-	@GetMapping(value = "/api/public/hello/{name}")
-	public ResponseEntity<?> helloPublic(@PathVariable String name) {
-		String result = String.format("Hello JWT, %s! (Public)", name);
-		return ResponseEntity.ok(result);
-	}
 	
+	private static final String USED_USERNAME = "UserName is used";
+	
+	/**
+	 * @param auth
+	 * @return
+	 */
 	@PostMapping(value = "/api/signup")
 	public ResponseEntity<?> signup(@RequestBody AuthDTO auth) {
 		ObjectNode jsonObject = objectMapper.createObjectNode();
@@ -54,10 +48,14 @@ public class AuthController {
 			jsonObject.put("key", correctCredentials);
 			return new ResponseEntity<>(jsonObject, HttpStatus.OK);
 		}
-		jsonObject.put("error", ERROR);
+		jsonObject.put("error", USED_USERNAME);
 		return new ResponseEntity<>(jsonObject, HttpStatus.BAD_REQUEST);
 	}
 
+	/**
+	 * @param auth
+	 * @return
+	 */
 	@PostMapping(value = "/api/auth")
 	public ResponseEntity<?> auth(@RequestBody AuthDTO auth) {
 		ObjectNode entity = objectMapper.createObjectNode();
@@ -72,10 +70,18 @@ public class AuthController {
 		return new ResponseEntity<>(entity, HttpStatus.BAD_REQUEST);
 	}
 	
-	@PostMapping(value = "/api/score")
+	/**
+	 * @param auth
+	 * @return
+	 */
+	@PostMapping(value = "/api/secure/score")
 	public ResponseEntity<?> score(@RequestBody AuthDTO auth) {
 		ObjectNode entity = objectMapper.createObjectNode();
 		String userName = auth.getUsername();
+		AccountDTO dto = userService.findUserByUserName(userName);
+		if (null == dto) {
+			entity.put("error", ERROR);
+		}
 		int score = auth.getScore();
 		boolean rs = userService.updateScore(userName, score);
 		if (rs) {
@@ -90,7 +96,7 @@ public class AuthController {
 	 * @param auth
 	 * @return
 	 */
-	@PostMapping(value = "/api/user")
+	@PostMapping(value = "/api/secure/user")
 	public ResponseEntity<?> user(@RequestBody AuthDTO auth) {
 		ObjectNode entity = objectMapper.createObjectNode();
 		String userName = auth.getUsername();
@@ -101,28 +107,33 @@ public class AuthController {
 			entity.put("Rank", dto.getRanking());
 			return new ResponseEntity<>(entity, HttpStatus.OK);
 		}
-		return new ResponseEntity<>(entity, HttpStatus.OK);
+		entity.put("error", ERROR);
+		return new ResponseEntity<>(entity, HttpStatus.BAD_REQUEST);
 	}
 	
-	@PostMapping(value = "/api/ranking")
+	/**
+	 * @param ranking
+	 * @return
+	 */
+	@PostMapping(value = "/api/secure/ranking")
 	public ResponseEntity<?> ranking(@RequestBody RankingDTO ranking) {
 		List<ObjectNode> listAccount = new ArrayList<ObjectNode>();
 		int fromRank = ranking.getFromRank();
 		int toRank =ranking.getToRank();
 		List<AccountDTO> listDTO = userService.findUserByRanking(fromRank, toRank);
 		if (!CollectionUtils.isEmpty(listDTO)) {
-			int rank = fromRank;
 			for (AccountDTO accountDTO : listDTO) {
 				ObjectNode entity = objectMapper.createObjectNode();
 				entity.put("UserName", accountDTO.getUserName());
 				entity.put("Score", accountDTO.getScore());
-				entity.put("Rank",rank);
+				entity.put("Rank",accountDTO.getRanking());
 				listAccount.add(entity);
-				rank++;
 			}
 			return new ResponseEntity<>(listAccount, HttpStatus.OK);
 		}
-		return new ResponseEntity<>(listAccount, HttpStatus.OK);
+		ObjectNode entity = objectMapper.createObjectNode();
+		entity.put("error", ERROR);
+		return new ResponseEntity<>(listAccount, HttpStatus.BAD_REQUEST);
 	}
 	
 
