@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.ItemCollection;
@@ -93,8 +94,9 @@ public class AccountDAO {
 	 * 
 	 * @param userName
 	 * @return
+	 * @throws Exception
 	 */
-	public AccountDTO findAccountByUserName(String userName) {
+	public AccountDTO findAccountByUserName(String userName) throws Exception {
 		Table accountTable = dynamoDBConfig.getTable(TABLE_NAME);
 
 		QuerySpec spec = new QuerySpec().withKeyConditionExpression("UserName = :userName")
@@ -115,8 +117,7 @@ public class AccountDAO {
 			}
 
 		} catch (Exception ex) {
-			System.out.println(ex.getMessage());
-			return null;
+			throw new Exception("Errors");
 		}
 		return null;
 	}
@@ -126,13 +127,18 @@ public class AccountDAO {
 	 * 
 	 * @param listUserRanking
 	 * @return
+	 * @throws Exception 
 	 */
-	public List<AccountDTO> findAccountByRank(List<RankingDTO> listUserRanking) {
+	public List<AccountDTO> findAccountByRank(List<RankingDTO> listUserRanking) throws Exception {
 		Table accountTable = dynamoDBConfig.getTable(TABLE_NAME);
 		List<AccountDTO> rs = new ArrayList<AccountDTO>();
 
+		if (CollectionUtils.isEmpty(listUserRanking)) {
+			throw new Exception("Errors");
+		}
+
 		// Create map-value for scan filter expression
-		Map<String,Object> mapOptions = new HashMap<String,Object>();
+		Map<String, Object> mapOptions = new HashMap<String, Object>();
 		List<String> listValue = new ArrayList<String>();
 		int i = 0;
 		for (RankingDTO account : listUserRanking) {
@@ -140,11 +146,11 @@ public class AccountDAO {
 			listValue.add(":u" + i);
 			i++;
 		}
-		
-		ScanSpec scanSpec = new ScanSpec().withFilterExpression("#userName IN ("+ StringUtils.join(listValue, ",") +")")
-				.withNameMap(new NameMap().with("#userName", "UserName"))
-				.withValueMap(mapOptions);
-		
+
+		ScanSpec scanSpec = new ScanSpec()
+				.withFilterExpression("#userName IN (" + StringUtils.join(listValue, ",") + ")")
+				.withNameMap(new NameMap().with("#userName", "UserName")).withValueMap(mapOptions);
+
 		ItemCollection<ScanOutcome> items = accountTable.scan(scanSpec);
 
 		Iterator<Item> iterator = items.iterator();

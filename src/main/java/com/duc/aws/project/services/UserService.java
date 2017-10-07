@@ -28,8 +28,9 @@ public class UserService {
 	 * @param userName
 	 * @param passWord
 	 * @return
+	 * @throws Exception 
 	 */
-	public String authenticate(String userName, String passWord) {
+	public String authenticate(String userName, String passWord) throws Exception {
 
 		AccountDTO user = findUserByUserName(userName);
 		if (null != user) {
@@ -44,8 +45,9 @@ public class UserService {
 	/**
 	 * @param userName
 	 * @return
+	 * @throws Exception 
 	 */
-	public AccountDTO findUserByUserName(String userName) {
+	public AccountDTO findUserByUserName(String userName) throws Exception {
 		AccountDTO account = accountDAO.findAccountByUserName(userName);
 		return account;
 	}
@@ -54,8 +56,9 @@ public class UserService {
 	 * @param fromRank
 	 * @param toRank
 	 * @return
+	 * @throws Exception 
 	 */
-	public List<AccountDTO> findUserByRanking(int fromRank, int toRank) {
+	public List<AccountDTO> findUserByRanking(int fromRank, int toRank) throws Exception {
 
 		List<RankingDTO> listAccount = rankingDAO.getRankingByRange(fromRank, toRank);
 

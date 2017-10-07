@@ -33,8 +33,9 @@ public class RankingDAO {
 	 * @param fromRank
 	 * @param toRank
 	 * @return
+	 * @throws Exception 
 	 */
-	public List<RankingDTO> getRankingByRange(int fromRank, int toRank) {
+	public List<RankingDTO> getRankingByRange(int fromRank, int toRank) throws Exception {
 		List<RankingDTO> listRanking = new ArrayList<RankingDTO>();
 		Table rankingTable = dynamoDBConfig.getTable(TABLE_NAME);
 
@@ -57,6 +58,7 @@ public class RankingDAO {
 		} catch (Exception e) {
 			System.err.println("Unable to scan the table:");
 			System.err.println(e.getMessage());
+			throw new Exception("Errors");
 		}
 
 		return listRanking;
@@ -67,8 +69,9 @@ public class RankingDAO {
 	 * 
 	 * @param userName
 	 * @return
+	 * @throws Exception 
 	 */
-	public int getRankingByUserName(String userName) {
+	public int getRankingByUserName(String userName) throws Exception {
 		int rs = 0;
 		Table accountTable = dynamoDBConfig.getTable(TABLE_NAME);
 
@@ -88,7 +91,7 @@ public class RankingDAO {
 
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
-			return rs;
+			throw new Exception("Errors");
 		}
 		return rs;
 	}
