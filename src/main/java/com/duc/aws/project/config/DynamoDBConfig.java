@@ -60,6 +60,5 @@ public class DynamoDBConfig {
      */
     private ProfileCredentialsProvider amazonAWSCredentials() {
         return new ProfileCredentialsProvider();
-    	//return new BasicAWSCredentials(amazonAWSAccessKey, amazonAWSSecretKey);
     }
 }
