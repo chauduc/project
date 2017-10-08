@@ -40,6 +40,17 @@ public class AuthController {
 	private static final String ERROR = "FAIL";
 
 	private static final String USED_USERNAME = "UserName is used";
+	
+	/**
+	 * @param auth
+	 * @return
+	 */
+	@GetMapping(value = "/api")
+	public ResponseEntity<?> healthyCheck() {
+		ObjectNode jsonObject = objectMapper.createObjectNode();
+		jsonObject.put("healthCheck", "OK");
+		return new ResponseEntity<>(jsonObject, HttpStatus.OK);
+	}
 
 	/**
 	 * @param auth
