@@ -48,7 +48,7 @@ public class AuthController {
 	@GetMapping(value = "/api")
 	public ResponseEntity<?> healthyCheck() {
 		ObjectNode jsonObject = objectMapper.createObjectNode();
-		jsonObject.put("healthCheck", "OK");
+		jsonObject.put("healthCheck", "Deploy By GitHub");
 		return new ResponseEntity<>(jsonObject, HttpStatus.OK);
 	}
 
